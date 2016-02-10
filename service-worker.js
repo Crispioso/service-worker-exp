@@ -1,31 +1,31 @@
-/* Import service worker cache polyfill JS */
-// importScripts('cache-polyfill.js');
+self.addEventListener('install', event => {
+  // Do install stuff
+  console.log('installed');
+  
+  	/* Import service worker cache polyfill JS */
+	importScripts('cache-polyfill.js');
+  
+  // pre cache a load of stuff:
+  event.waitUntil(
+    caches.open('myapp-static-v1').then(function(cache) {
+      return cache.addAll([
+        'image.jpg',
+  		'main.js',
+  		'/'
+      ]);
+    })
+  )
+});
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').then(function(registration) {
-    // Registration was successful
-    console.log('ServiceWorker registration successful with scope: ',    registration.scope);
-  }).catch(function(err) {
-    // registration failed :(
-    console.log('ServiceWorker registration failed: ', err);
-  });
-}
+self.addEventListener('activate', event => {
+  // Do activate stuff: This will come later on.
+  console.log('activated');
+});
 
-console.log('hello');
-
-// example usage:
-// self.addEventListener('install', function(event) {
-//   event.waitUntil(
-//     caches.open('demo-cache').then(function(cache) {
-//       return cache.put('/', new Response("From the cache!"));
-//     })
-//   );
-// });
-
-// self.addEventListener('fetch', function(event) {
-//   event.respondWith(
-//     caches.match(event.request).then(function(response) {
-//       return response || new Response("Nothing in the cache for this request");
-//     })
-//   );
-// });
+self.addEventListener('fetch', function(event) {
+  event.respondWith(
+    caches.match(event.request).then(function(response) {
+      return response || fetch(event.request);
+    })
+  );
+});
